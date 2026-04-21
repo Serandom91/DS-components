@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DS Components — Generic Design System</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brand:        #1a1a1a;
+      --accent:       #3869C5;
+      --bg:           #F4F3F0;
+      --surface:      #ffffff;
+      --border:       #E2E4E8;
+      --text:         #1a1a1a;
+      --text-muted:   #888780;
+      --font:         'Inter', system-ui, sans-serif;
+      --font-mono:    'IBM Plex Mono', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); background: var(--bg); min-height: 100vh; }
+
+    /* Shell */
+    .shell-header {
+      background: var(--brand);
+      padding: 0 48px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .shell-header__brand { display: flex; align-items: center; gap: 12px; }
+    .shell-header__mark {
+      width: 28px; height: 28px; background: #fff;
+      border-radius: 6px; display: flex; align-items: center;
+      justify-content: center;
+    }
+    .shell-header__mark svg { width: 16px; height: 16px; }
+    .shell-header__sep { width: 1px; height: 18px; background: rgba(255,255,255,0.15); }
+    .shell-header__name {
+      font-size: 14px; font-weight: 500;
+      color: rgba(255,255,255,0.8); letter-spacing: 0.2px;
+    }
+    .shell-header__version {
+      font-family: var(--font-mono);
+      font-size: 11px; color: rgba(255,255,255,0.35);
+      background: rgba(255,255,255,0.06);
+      padding: 3px 8px; border-radius: 20px;
+    }
+
+    /* Layout */
+    .layout { display: flex; min-height: calc(100vh - 60px); }
+
+    /* Sidebar */
+    .sidebar {
+      width: 210px; flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 28px 0;
+      position: sticky; top: 0;
+      height: calc(100vh - 60px);
+      overflow-y: auto;
+    }
+    .sidebar__section { margin-bottom: 24px; }
+    .sidebar__label {
+      font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
+      text-transform: uppercase; color: #bbb;
+      padding: 0 20px; margin-bottom: 4px;
+    }
+    .sidebar__link {
+      display: flex; align-items: center; gap: 10px;
+      padding: 7px 20px; font-size: 13px; color: var(--text-muted);
+      text-decoration: none; transition: all 0.15s;
+      border-left: 2px solid transparent;
+    }
+    .sidebar__link:hover { color: var(--accent); background: #f0f4ff; }
+    .sidebar__dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--border); flex-shrink: 0;
+    }
+
+    /* Main */
+    .main { flex: 1; padding: 48px; }
+    .section-heading {
+      font-size: 26px; font-weight: 600;
+      color: var(--text); margin-bottom: 6px;
+    }
+    .section-sub {
+      font-size: 14px; color: var(--text-muted);
+      margin-bottom: 40px; line-height: 1.6; max-width: 560px;
+    }
+    .section-title {
+      font-size: 11px; font-weight: 700; letter-spacing: 1.1px;
+      text-transform: uppercase; color: #bbb;
+      margin-bottom: 16px; margin-top: 40px;
+      padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    }
+    .section-title:first-of-type { margin-top: 0; }
+
+    /* Cards grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+
+    .component-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      text-decoration: none;
+      transition: box-shadow 0.2s, transform 0.15s, border-color 0.2s;
+      display: flex; flex-direction: column;
+    }
+    .component-card:hover {
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      transform: translateY(-2px);
+      border-color: #c5cfe8;
+    }
+
+    .component-card__preview {
+      height: 110px;
+      background: #f8f9fb;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; padding: 16px;
+    }
+
+    /* Mini previews */
+    .preview-btns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    .preview-btn {
+      height: 28px; padding: 0 14px; border-radius: 9999px;
+      font-size: 11px; font-weight: 500; display: flex; align-items: center;
+    }
+    .preview-btn--primary { background: #1a1a1a; color: #fff; }
+    .preview-btn--outline { background: transparent; color: #1a1a1a; border: 1px solid #1a1a1a; }
+    .preview-btn--muted { background: #eee; color: #888; }
+
+    .preview-input {
+      width: 100%; height: 32px; background: #fff;
+      border: 1px solid #ddd; border-radius: 6px;
+      display: flex; align-items: center; padding: 0 10px;
+    }
+    .preview-input__text { font-size: 11px; color: #bbb; }
+    .preview-input__cursor { width: 1px; height: 12px; background: #888; margin-left: 2px; }
+
+    .preview-badges { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+    .preview-badge {
+      height: 20px; padding: 0 8px; border-radius: 9999px;
+      font-size: 10px; font-weight: 500; display: flex; align-items: center;
+    }
+    .preview-badge--blue   { background: #e5ebf6; color: #002d72; }
+    .preview-badge--green  { background: #eaf3de; color: #3b6d11; }
+    .preview-badge--red    { background: #fee5eb; color: #8a002a; }
+    .preview-badge--amber  { background: #faeeda; color: #412402; }
+    .preview-badge--neutral { background: #e6e5e2; color: #474644; }
+
+    .preview-controls { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+    .preview-check { display: flex; align-items: center; gap: 8px; }
+    .preview-check__box {
+      width: 14px; height: 14px; border-radius: 3px;
+      background: #1a1a1a; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .preview-check__box--empty { background: transparent; border: 1.5px solid #ccc; }
+    .preview-check__label { font-size: 11px; color: #555; }
+    .preview-toggle { display: flex; align-items: center; gap: 6px; }
+    .preview-toggle__track {
+      width: 28px; height: 15px; border-radius: 99px; background: #1a1a1a;
+      position: relative;
+    }
+    .preview-toggle__thumb {
+      width: 11px; height: 11px; background: #fff; border-radius: 50%;
+      position: absolute; top: 2px; right: 2px;
+    }
+
+    .preview-search {
+      width: 100%; display: flex; flex-direction: column; gap: 6px;
+    }
+    .preview-search__bar {
+      display: flex; align-items: center; gap: 6px;
+      background: #fff; border: 1px solid #ddd; border-radius: 9999px;
+      height: 30px; padding: 0 12px;
+    }
+    .preview-search__icon { width: 12px; height: 12px; color: #bbb; flex-shrink: 0; }
+    .preview-search__text { font-size: 10px; color: #bbb; }
+
+    .preview-tooltip {
+      position: relative; display: inline-flex; flex-direction: column; align-items: center; gap: 6px;
+    }
+    .preview-tooltip__trigger {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #fff; border: 1px solid #ddd;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 500; color: #555;
+    }
+    .preview-tooltip__box {
+      background: #1e1d1b; color: #fff;
+      font-size: 9px; padding: 4px 8px; border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    .preview-alphabet { display: flex; gap: 3px; flex-wrap: wrap; justify-content: center; }
+    .preview-alpha-letter {
+      width: 16px; height: 16px; border-radius: 3px;
+      font-size: 8px; font-weight: 500;
+      display: flex; align-items: center; justify-content: center;
+      background: #f0f0f0; color: #888;
+    }
+    .preview-alpha-letter--active { background: #1a1a1a; color: #fff; }
+
+    .component-card__body { padding: 16px 18px 18px; flex: 1; }
+    .component-card__tag {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.8px;
+      text-transform: uppercase; color: var(--text-muted);
+      margin-bottom: 4px; display: block;
+    }
+    .component-card__name {
+      font-size: 15px; font-weight: 600;
+      color: var(--text); margin-bottom: 5px;
+    }
+    .component-card__desc { font-size: 12px; color: var(--text-muted); line-height: 1.55; }
+    .component-card__variants {
+      display: flex; gap: 5px; margin-top: 10px; flex-wrap: wrap;
+    }
+    .variant-pill {
+      font-size: 10px; font-weight: 600; padding: 2px 7px;
+      border-radius: 20px; background: #f0f0f0; color: #555;
+    }
+    .variant-pill--react { background: #EAF3DE; color: #3B6D11; }
+
+    /* Token section */
+    .token-callout {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px 24px;
+      display: flex; align-items: flex-start; gap: 16px;
+      margin-bottom: 40px;
+    }
+    .token-callout__icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: #f4f3f0; display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0; font-size: 18px;
+    }
+    .token-callout__title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .token-callout__desc { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+    .token-callout__link {
+      display: inline-flex; align-items: center; gap: 4px;
+      margin-top: 8px; font-size: 12px; font-weight: 500;
+      color: var(--accent); text-decoration: none;
+    }
+    .token-callout__link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<!-- Shell header -->
+<div class="shell-header">
+  <div class="shell-header__brand">
+    <div class="shell-header__mark">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="5" height="5" rx="1" fill="#1a1a1a"/>
+        <rect x="9" y="2" width="5" height="5" rx="1" fill="#1a1a1a"/>
+        <rect x="2" y="9" width="5" height="5" rx="1" fill="#1a1a1a"/>
+        <rect x="9" y="9" width="5" height="5" rx="1" fill="#1a1a1a" opacity="0.3"/>
+      </svg>
+    </div>
+    <div class="shell-header__sep"></div>
+    <span class="shell-header__name">DS Components</span>
+  </div>
+  <span class="shell-header__version">v0.1.0</span>
+</div>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar__section">
+      <p class="sidebar__label">Tokens</p>
+      <a href="tokens.css" class="sidebar__link">
+        <span class="sidebar__dot"></span> tokens.css
+      </a>
+    </div>
+    <div class="sidebar__section">
+      <p class="sidebar__label">Inputs</p>
+      <a href="components/buttons.html" class="sidebar__link">
+        <span class="sidebar__dot"></span> Buttons
+      </a>
+      <a href="components/inputs.html" class="sidebar__link">
+        <span class="sidebar__dot"></span> Inputs
+      </a>
+      <a href="components/controls.html" class="sidebar__link">
+        <span class="sidebar__dot"></span> Controls
+      </a>
+      <a href="components/search-bar.html" class="sidebar__link">
+        <span class="sidebar__dot"></span> Search Bar
+      </a>
+    </div>
+    <div class="sidebar__section">
+      <p class="sidebar__label">Display</p>
+      <a href="components/badges-avatars.html" class="sidebar__link">
+        <span class="sidebar__dot"></span> Badges &amp; Avatars
+      </a>
+      <a href="components/tooltip.html" class="sidebar__link">
+        <span class="sidebar__dot"></span> Tooltip
+      </a>
+      <a href="components/AlphabetFilter/AlphabetFilter.html" class="sidebar__link">
+        <span class="sidebar__dot"></span> Alphabet Filter
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <h1 class="section-heading">DS Components</h1>
+    <p class="section-sub">Generic, client-agnostic UI component library. Each component connects to <code>tokens.css</code> — override with a client theme file to adapt the full system to any brand.</p>
+
+    <!-- Token callout -->
+    <div class="token-callout">
+      <div class="token-callout__icon">🎨</div>
+      <div>
+        <p class="token-callout__title">3-layer token system</p>
+        <p class="token-callout__desc">
+          <strong>Primitives</strong> → raw values (colors, spacing, radii) ·
+          <strong>Semantics</strong> → brand, text, background, feedback ·
+          <strong>Components</strong> → button, input, card, badge tokens.<br>
+          To theme for a client: create <code>[client]-tokens.css</code> and override the semantic layer.
+        </p>
+        <a href="tokens.css" class="token-callout__link">
+          View tokens.css
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Inputs -->
+    <p class="section-title">Inputs</p>
+    <div class="cards-grid">
+
+      <!-- Buttons -->
+      <a href="components/buttons.html" class="component-card">
+        <div class="component-card__preview">
+          <div class="preview-btns">
+            <div class="preview-btn preview-btn--primary">Primary</div>
+            <div class="preview-btn preview-btn--outline">Secondary</div>
+            <div class="preview-btn preview-btn--muted">Disabled</div>
+          </div>
+        </div>
+        <div class="component-card__body">
+          <span class="component-card__tag">Input</span>
+          <p class="component-card__name">Buttons</p>
+          <p class="component-card__desc">Primary, secondary, ghost and danger variants. Three sizes. Icon support.</p>
+          <div class="component-card__variants">
+            <span class="variant-pill">5 variants</span>
+            <span class="variant-pill">3 sizes</span>
+            <span class="variant-pill--react variant-pill">React Ready</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Inputs -->
+      <a href="components/inputs.html" class="component-card">
+        <div class="component-card__preview" style="flex-direction:column; gap:8px;">
+          <div class="preview-input">
+            <span class="preview-input__text">Placeholder text</span>
+            <span class="preview-input__cursor"></span>
+          </div>
+          <div class="preview-input" style="border-color:#e40046;">
+            <span class="preview-input__text" style="color:#e40046;">Error state</span>
+          </div>
+        </div>
+        <div class="component-card__body">
+          <span class="component-card__tag">Input</span>
+          <p class="component-card__name">Inputs</p>
+          <p class="component-card__desc">Text field, textarea and select. All states: default, focus, error, disabled.</p>
+          <div class="component-card__variants">
+            <span class="variant-pill">Text · Textarea · Select</span>
+            <span class="variant-pill--react variant-pill">React Ready</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Controls -->
+      <a href="components/controls.html" class="component-card">
+        <div class="component-card__preview">
+          <div class="preview-controls">
+            <div class="preview-check">
+              <div class="preview-check__box">
+                <svg width="8" height="8" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <span class="preview-check__label">Checked</span>
+            </div>
+            <div class="preview-check">
+              <div class="preview-check__box preview-check__box--empty"></div>
+              <span class="preview-check__label">Unchecked</span>
+            </div>
+            <div class="preview-toggle">
+              <div class="preview-toggle__track"><div class="preview-toggle__thumb"></div></div>
+              <span class="preview-check__label">Toggle on</span>
+            </div>
+          </div>
+        </div>
+        <div class="component-card__body">
+          <span class="component-card__tag">Input</span>
+          <p class="component-card__name">Controls</p>
+          <p class="component-card__desc">Checkbox (with indeterminate), radio button group, and toggle switch.</p>
+          <div class="component-card__variants">
+            <span class="variant-pill">Checkbox · Radio · Toggle</span>
+            <span class="variant-pill--react variant-pill">React Ready</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Search Bar -->
+      <a href="components/search-bar.html" class="component-card">
+        <div class="component-card__preview">
+          <div class="preview-search">
+            <div class="preview-search__bar">
+              <svg class="preview-search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="15.65" y2="15.65"/></svg>
+              <span class="preview-search__text">Search...</span>
+            </div>
+          </div>
+        </div>
+        <div class="component-card__body">
+          <span class="component-card__tag">Input</span>
+          <p class="component-card__name">Search Bar</p>
+          <p class="component-card__desc">Inline search field with suggestions dropdown and hero search variant.</p>
+          <div class="component-card__variants">
+            <span class="variant-pill">Inline · Hero</span>
+            <span class="variant-pill--react variant-pill">React Ready</span>
+          </div>
+        </div>
+      </a>
+
+    </div>
+
+    <!-- Display -->
+    <p class="section-title">Display</p>
+    <div class="cards-grid">
+
+      <!-- Badges & Avatars -->
+      <a href="components/badges-avatars.html" class="component-card">
+        <div class="component-card__preview" style="flex-direction:column; gap:8px;">
+          <div class="preview-badges">
+            <div class="preview-badge preview-badge--blue">Primary</div>
+            <div class="preview-badge preview-badge--green">Success</div>
+            <div class="preview-badge preview-badge--red">Error</div>
+            <div class="preview-badge preview-badge--amber">Warning</div>
+            <div class="preview-badge preview-badge--neutral">Neutral</div>
+          </div>
+        </div>
+        <div class="component-card__body">
+          <span class="component-card__tag">Display</span>
+          <p class="component-card__name">Badges &amp; Avatars</p>
+          <p class="component-card__desc">Status badges, avatar initials, avatar groups, dividers and spinners.</p>
+          <div class="component-card__variants">
+            <span class="variant-pill">6 badge variants</span>
+            <span class="variant-pill">5 avatar sizes</span>
+            <span class="variant-pill--react variant-pill">React Ready</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Tooltip -->
+      <a href="components/tooltip.html" class="component-card">
+        <div class="component-card__preview">
+          <div class="preview-tooltip">
+            <div class="preview-tooltip__box">Tooltip text</div>
+            <div class="preview-tooltip__trigger">?</div>
+          </div>
+        </div>
+        <div class="component-card__body">
+          <span class="component-card__tag">Display</span>
+          <p class="component-card__name">Tooltip</p>
+          <p class="component-card__desc">Dark and light variants. Four positions: top, bottom, left, right.</p>
+          <div class="component-card__variants">
+            <span class="variant-pill">Dark · Light</span>
+            <span class="variant-pill">4 positions</span>
+            <span class="variant-pill--react variant-pill">React Ready</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Alphabet Filter -->
+      <a href="components/AlphabetFilter/AlphabetFilter.html" class="component-card">
+        <div class="component-card__preview">
+          <div class="preview-alphabet">
+            <div class="preview-alpha-letter preview-alpha-letter--active">A</div>
+            <div class="preview-alpha-letter">B</div>
+            <div class="preview-alpha-letter">C</div>
+            <div class="preview-alpha-letter preview-alpha-letter--active">D</div>
+            <div class="preview-alpha-letter">E</div>
+            <div class="preview-alpha-letter">F</div>
+            <div class="preview-alpha-letter">G</div>
+            <div class="preview-alpha-letter">H</div>
+            <div class="preview-alpha-letter">I</div>
+          </div>
+        </div>
+        <div class="component-card__body">
+          <span class="component-card__tag">Display</span>
+          <p class="component-card__name">Alphabet Filter</p>
+          <p class="component-card__desc">A–Z filter bar for list navigation. Active state, disabled letters and smooth scroll.</p>
+          <div class="component-card__variants">
+            <span class="variant-pill">Horizontal · Compact</span>
+            <span class="variant-pill--react variant-pill">React Ready</span>
+          </div>
+        </div>
+      </a>
+
+    </div>
+
+  </main>
+</div>
+
+</body>
+</html>
